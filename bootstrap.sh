@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -ex
 
 ## MIT License
 #
@@ -27,9 +28,9 @@ if [ ! -d "$HOME/.vim" ]; then
     mkdir -p "$HOME/.vim"
 fi
 
-# Clone Vundle.vim if not already cloned
-if [ ! -d "$HOME/.vim/bundle/Vundle.vim" ]; then
-    git clone https://github.com/VundleVim/Vundle.vim.git "$HOME/.vim/bundle/Vundle.vim"
+if [ ! -d "$HOME/.vim/autoload/plug.vim" ]; then
+    curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 fi
 
 # Clone or update vimconfig repository
@@ -50,9 +51,6 @@ if [ ! -L "$HOME/.vimrc" ] || [ "$(readlink "$HOME/.vimrc")" != "$HOME/vimconfig
     # Link vimrc from vimconfig to ~/.vimrc
     ln -s "$HOME/vimconfig/vimrc" "$HOME/.vimrc"
 fi
-
-# Link vimrc from vimconfig to ~/.vimrc
-ln -s "$HOME/vimconfig/vimrc" "$HOME/.vimrc"
 
 echo "Setup completed successfully!"
 
