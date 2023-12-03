@@ -63,6 +63,18 @@ if [ ! -L "$HOME/.tmux.conf" ] || [ "$(readlink "$HOME/.tmux.conf")" != "$HOME/v
     ln -s "$HOME/vimconfig/tmux.conf" "$HOME/.tmux.conf"
 fi
 
+# Check if ~/.gitconfig is already a symbolic link to the repository file
+if [ ! -L "$HOME/.gitconfig" ] || [ "$(readlink "$HOME/.gitconfig")" != "$HOME/vimconfig/gitconfig" ]; then
+    # Backup existing ~/.gitconfig if it is not a link or links to a different file
+    if [ -f "$HOME/.gitconfig" ]; then
+        mv "$HOME/.gitconfig" "$HOME/.gitconfig.bak"
+    fi
+
+    # Link gitconfig from vimconfig to ~/.gitconfig
+    ln -s "$HOME/vimconfig/gitconfig" "$HOME/.gitconfig"
+fi
+
+
 
 echo "Setup completed successfully!"
 
