@@ -75,6 +75,29 @@ if [ ! -L "$HOME/.gitconfig" ] || [ "$(readlink "$HOME/.gitconfig")" != "$HOME/v
 fi
 
 
+# now link the ftplugins if they do not exist
+vimconfig_dir="$HOME/vimconfig"
+ftplugin_dir="$vimconfig_dir/ftplugin"
+target_dir="$HOME/.vim/after/ftplugin"
+
+# Ensure target directory exists
+mkdir -p "$target_dir"
+
+# Iterate through files in ftplugin_dir and create symbolic links
+for file in "$ftplugin_dir"/*; do
+    if [ -f "$file" ]; then
+        filename=$(basename "$file")
+        target_path="$target_dir/$filename"
+
+        # Create symbolic link if it doesn't exist
+        if [ ! -e "$target_path" ]; then
+            ln -s "$file" "$target_path"
+            echo "Linked $filename to $target_path"
+        fi
+    fi
+done
+
+
 
 echo "Setup completed successfully!"
 
