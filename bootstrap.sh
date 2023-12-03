@@ -97,7 +97,12 @@ for file in "$ftplugin_dir"/*; do
     fi
 done
 
-
+# I need nerdfonts, Hack is not a strong preference only a convenient choice
+if [ ! -d "$HOME/vimconfig/fonts" ]; then
+  wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Hack.tar.xz
+  mkdir $HOME/vimconfig/fonts
+  tar -xJf Hack.tar.xz -C $HOME/vimconfig/fonts
+fi
 
 echo "Setup completed successfully!"
 
