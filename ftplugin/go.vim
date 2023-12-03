@@ -78,3 +78,5 @@ if !exists("*s:handleSymbol")
     normal! zz
   endfunction
 endif
+
+nmap <silent> <buffer> <Leader>h : <C-u>call GOVIMHover()<CR>
