@@ -52,5 +52,17 @@ if [ ! -L "$HOME/.vimrc" ] || [ "$(readlink "$HOME/.vimrc")" != "$HOME/vimconfig
     ln -s "$HOME/vimconfig/vimrc" "$HOME/.vimrc"
 fi
 
+# Check if ~/.tmux.conf is already a symbolic link to the repository file
+if [ ! -L "$HOME/.tmux.conf" ] || [ "$(readlink "$HOME/.tmux.conf")" != "$HOME/vimconfig/tmux.conf" ]; then
+    # Backup existing ~/.tmux.conf if it is not a link or links to a different file
+    if [ -f "$HOME/.tmux.conf" ]; then
+        mv "$HOME/.tmux.conf" "$HOME/.tmux.conf.bak"
+    fi
+
+    # Link tmux.conf from vimconfig to ~/.tmux.conf
+    ln -s "$HOME/vimconfig/tmux.conf" "$HOME/.tmux.conf"
+fi
+
+
 echo "Setup completed successfully!"
 

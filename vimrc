@@ -11,11 +11,16 @@ call plug#begin()
 " let Vundle manage Vundle, required
 Plug 'VundleVim/Vundle.vim'
 Plug 'govim/govim'
-Plug 'tmux-plugins/vim-tmux'
+Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}
 Plug 'edkolev/tmuxline.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'gruvbox-community/gruvbox'
 Plug 'scrooloose/nerdtree'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
+Plug 'junegunn/fzf.vim'
+" autocomplete as recommended by govim
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'yami-beta/asyncomplete-omni.vim'
 
 " Initialize plugin system
 " - Automatically executes `filetype plugin indent on` and `syntax enable`.
@@ -44,20 +49,32 @@ set backspace=indent,eol,start
 set incsearch                   
 " Highlight found searches
 set hlsearch                    
-set showcmd                  " Show me what I'm typing
-set noswapfile               " Don't use swapfile
-set nobackup                 " Don't create annoying backup files
-set splitright               " Split vertical windows right to the current windows
-set splitbelow               " Split horizontal windows below to the current windows
-set noshowmatch              " Do not show matching brackets by flickering
-set noshowmode               " We show the mode with airline or lightline
-set ignorecase               " Search case insensitive...
-set smartcase                " ... but not it begins with upper case
+" Show me what I'm typing
+set showcmd                  
+" Don't use swapfile
+set noswapfile               
+" Don't create annoying backup files
+set nobackup                 
+" Split vertical windows right to the current windows
+set splitright               
+" Split horizontal windows below to the current windows
+set splitbelow               
+" Do not show matching brackets by flickering
+set noshowmatch              
+" We show the mode with airline or lightline
+set noshowmode               
+" Search case insensitive...
+set ignorecase               
+" ... but not it begins with upper case
+set smartcase                
 set completeopt=menu,menuone
-set nocursorcolumn           " speed up syntax highlighting
+" speed up syntax highlighting
+set nocursorcolumn           
 set nocursorline
-set shortmess+=c   " Shut off completion messages
-set belloff+=ctrlg " If Vim beeps during completion
+" Shut off completion messages
+set shortmess+=c   
+" If Vim beeps during completion
+set belloff+=ctrlg 
 
 set lazyredraw
 " increase max memory to show syntax highlighting for large files 
@@ -108,10 +125,14 @@ let g:tmuxline_preset = {
 
 let g:tmuxline_powerline_separators = 0
 
+"=====================================================
+"==================== THEME ==========================
 
 " Assume background is dark, this is true for 99% of my terminals
 " Otherwise color scheme is really hard to see
 set background=dark
+" Change the color scheme to one that i like (this is as personal as it gets)
+colorscheme gruvbox
 " Show line numbers, I have no clue why this is not a default
 set number
 " Remember position of last edit and return on reopen
@@ -120,7 +141,9 @@ if has("autocmd")
   au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 endif
 
-"" Tabs
+"=====================================================
+"==================== TABS ===========================
+
 " always show the tabline, I love consistency and hate my screen real state :p
 set showtabline=2
 " I would rather use a fancier combo but pgup/down or ctr/cmd ][ are usually
@@ -128,4 +151,91 @@ set showtabline=2
 nmap tn <Esc>:tabnext<CR>
 nmap tp <Esc>:tabprevious<CR>
 
+"=====================================================
+"==================== GOVIM ==========================
 
+set signcolumn=number
+
+"=====================================================
+"==================== AUTOCOMPLETE ===================
+
+function! Omni()
+    call asyncomplete#register_source(asyncomplete#sources#omni#get_source_options({
+                    \ 'name': 'omni',
+                    \ 'whitelist': ['go'],
+                    \ 'completor': function('asyncomplete#sources#omni#completor')
+                    \  }))
+endfunction
+
+au VimEnter * :call Omni()
+
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <cr>    pumvisible() ? "\<C-y>" : "\<cr>"
+			\
+"=====================================================
+"==================== FUZZY FIND SYMBOLS =============
+
+
+" GovimFZFSymbol is a user-defined function that can be called to start fzf in
+" a mode whereby it uses govim's new child-parent capabilities to query the
+" parent govim instance for gopls Symbol method results that then are used to
+" drive fzf.
+function GovimFZFSymbol(queryAddition)
+  let l:expect_keys = join(keys(s:symbolActions), ',')
+  let l:source = join(GOVIMParentCommand(), " ").' gopls Symbol -quickfix'
+  let l:reload = l:source." {q}"
+  call fzf#run(fzf#wrap({
+        \ 'source': l:source,
+        \ 'sink*': function('s:handleSymbol'),
+        \ 'options': [
+        \       '--with-nth', '2..',
+        \       '--expect='.l:expect_keys,
+        \       '--phony',
+        \       '--bind', 'change:reload:'.l:reload
+        \ ]}))
+endfunction
+
+" Map \s to start a symbol search
+"
+" Once you have found the symbol you want:
+"
+" * Enter will open that result in the current window
+" * Ctrl-s will open that result in a split
+" * Ctrl-v will open that result in a vertical split
+" * Ctrl-t will open that result in a new tab
+"
+nmap <Leader>s :call GovimFZFSymbol('')<CR>
+
+" s:symbolActions are the actions that, in addition to plain <Enter>,
+" we want to be able to fire from fzf. Here we map them to the corresponding
+" command in VimScript.
+let s:symbolActions = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-s': 'split',
+  \ 'ctrl-v': 'vsplit',
+  \ }
+
+" With thanks and reference to github.com/junegunn/fzf.vim/issues/948 which
+" inspired the following
+function! s:handleSymbol(sym) abort
+  " a:sym is a [2]string array where the first element is the
+  " key pressed (or empty if simply Enter), and the second element
+  " is the entry selected in fzf, i.e. the match.
+  "
+  " The match will be of the form:
+  "
+  "   $filename:$line:$col: $match
+  "
+  if len(a:sym) == 0
+    return
+  endif
+  let l:cmd = get(s:symbolActions, a:sym[0], "")
+  let l:match = a:sym[1]
+  let l:parts = split(l:match, ":")
+  execute 'silent' l:cmd
+  execute 'buffer' bufnr(l:parts[0], 1)
+  set buflisted
+  call cursor(l:parts[1], l:parts[2])
+  normal! zz
+endfunction
