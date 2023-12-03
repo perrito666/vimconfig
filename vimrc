@@ -43,6 +43,7 @@ set mouse=a
 set encoding=utf-8
 set autoread
 set autoindent
+set smartindent
 " Makes backspace key more powerful.
 set backspace=indent,eol,start  
 " Shows the match while typing
@@ -55,6 +56,7 @@ set showcmd
 set noswapfile               
 " Don't create annoying backup files
 set nobackup                 
+set nowritebackup
 " Split vertical windows right to the current windows
 set splitright               
 " Split horizontal windows below to the current windows
@@ -239,3 +241,15 @@ function! s:handleSymbol(sym) abort
   call cursor(l:parts[1], l:parts[2])
   normal! zz
 endfunction
+
+" This comes from govim minimal conf
+set updatetime=500
+set balloondelay=250
+set signcolumn=yes
+autocmd! BufEnter,BufNewFile *.go,go.mod syntax on
+autocmd! BufLeave *.go,go.mod syntax off
+set backspace=2
+if has("patch-8.1.1904")
+  set completeopt+=popup
+  set completepopup=align:menu,border:off,highlight:Pmenu
+endif
