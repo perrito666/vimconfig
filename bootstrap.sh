@@ -38,7 +38,7 @@ if [ ! -d "$HOME/vimconfig" ]; then
     git clone https://github.com/perrito666/vimconfig.git "$HOME/vimconfig"
 else
     cd "$HOME/vimconfig"
-    git pull origin master
+    git pull origin main
 fi
 
 # Check if ~/.vimrc is already a symbolic link to the repository file
