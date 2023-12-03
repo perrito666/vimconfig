@@ -15,7 +15,7 @@
 ### FileType Plugins
 
 * `ftplugin/`
- * `go.vim`: Configuration for [govim](https://github.com/govim/govim) plugin for go.
- * `python.vim`: Configuration for python, borrowed from [fisadev](https://vim.fisadev.com/)
+	* `go.vim`: Configuration for [govim](https://github.com/govim/govim) plugin for go.
+ 	* `python.vim`: Configuration for python, borrowed from [fisadev](https://vim.fisadev.com/)
 
 
