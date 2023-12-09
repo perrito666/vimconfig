@@ -1,0 +1,11 @@
+# $HOME/.local/share/systemd/user/led-control.service
+
+[Unit]
+Description=LED Control Service
+
+[Service]
+Type=simple
+ExecStart=/home/hduran/vimconfig/thinkpad/venv/bin/python /home/hduran/vimconfig/thinkpad/mute_led_helper.py
+
+[Install]
+WantedBy=default.target
