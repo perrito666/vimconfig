@@ -1,3 +1,55 @@
+" Much of this stolen from fisa vim config https://github.com/fisadev/fisa-vim-config
+" 
+" -------------------
+" Initial Settings
+" -------------------
+"
+" To use fancy symbols wherever possible, change this setting from 0 to 1
+" and use a font from https://github.com/ryanoasis/nerd-fonts in your terminal
+" (if you aren't using one of those fonts, you will see funny characters here.
+" Trust me, they look nice when using one of those fonts).
+let fancy_symbols_enabled = 0
+
+" To use the background color of your terminal app, change this setting from 0
+" to 1
+let transparent_background = 0
+
+let using_neovim = has('nvim')
+let using_vim = !using_neovim
+
+let config_dir = has('nvim') ? stdpath('config') : expand('~/.vim')
+let data_dir = has('nvim') ? stdpath('data') .. '/site' : expand('~/.vim')
+
+" Figure out the system Python for Neovim.
+if exists("$VIRTUAL_ENV")
+    let g:python3_host_prog=substitute(system("which -a python3 | head -n2 | tail -n1"), "\n", '', 'g')
+else
+    let g:python3_host_prog=substitute(system("which python3"), "\n", '', 'g')
+endif
+
+" -----------------------
+" Vim-plug initialization
+" -----------------------
+" Avoid modifying this section, unless you are very sure of what you are doing
+" In short this bootstraps installing plug, which I used to do by hand
+"
+
+let vim_plug_just_installed = 0
+let vim_plug_path = data_dir .. '/autoload/plug.vim'
+if !filereadable(vim_plug_path)
+    echo "Installing Vim-plug..."
+    echo ""
+    silent execute "!curl -fLo " .. vim_plug_path .. " --create-dirs "
+      \ .. "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+    let vim_plug_just_installed = 1
+endif
+
+" manually load vim-plug the first time
+if vim_plug_just_installed
+    :execute 'source '.fnameescape(vim_plug_path)
+endif
+
+
 call plug#begin()
 " The default plugin directory will be as follows:
 "   - Vim (Linux/macOS): '~/.vim/plugged'
@@ -7,10 +59,11 @@ call plug#begin()
 "   - e.g. `call plug#begin('~/.vim/plugged')`
 "   - Avoid using standard Vim directory names like 'plugin'
 
+
 " Make sure you use single quotes
 " let Vundle manage Vundle, required
 Plug 'VundleVim/Vundle.vim'
-Plug 'govim/govim'
+" Plug 'govim/govim'
 Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}
 Plug 'edkolev/tmuxline.vim'
 Plug 'vim-airline/vim-airline'
@@ -19,12 +72,19 @@ Plug 'scrooloose/nerdtree'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 " autocomplete as recommended by govim
-Plug 'prabirshrestha/asyncomplete.vim'
-Plug 'yami-beta/asyncomplete-omni.vim'
+" Plug 'prabirshrestha/asyncomplete.vim'
+" Plug 'yami-beta/asyncomplete-omni.vim'
 " lsp required for python lsp
 Plug 'prabirshrestha/vim-lsp'
 " python deps from fisadev's vimrc
 " Python autocompletion
+if using_neovim && vim_plug_just_installed
+    Plug 'Shougo/deoplete.nvim', {'do': ':autocmd VimEnter * UpdateRemotePlugins'}
+else
+    Plug 'Shougo/deoplete.nvim'
+endif
+Plug 'roxma/nvim-yarp'
+Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'deoplete-plugins/deoplete-jedi'
 " Completion from other opened files
 Plug 'Shougo/context_filetype.vim'
@@ -46,15 +106,39 @@ Plug 'neomake/neomake'
 " Nice icons in the file explorer and file type status line.
 Plug 'ryanoasis/vim-devicons'
 
+
+
+
+
+if using_vim
+    " Consoles as buffers (neovim has its own consoles as buffers)
+    Plug 'rosenfeld/conque-term'
+    " XML/HTML tags navigation (neovim has its own)
+    Plug 'vim-scripts/matchit.zip'
+endif
+
+
 " Initialize plugin system
 " - Automatically executes `filetype plugin indent on` and `syntax enable`.
 call plug#end()
-" You can revert the settings after the call like so:
-"   filetype indent off   " Disable file-type-specific indentation
-"   syntax off            " Disable syntax highlighting
+
+" ---------------------
+" Install plugins the first time vim runs
+" ---------------------
+
+if vim_plug_just_installed
+    echo "Installing Bundles, please ignore key map error messages"
+    :PlugInstall
+endif
+
 
 " I borrowed some things from Fatih Arslan github.com/fatih/dotfiles
 filetype plugin indent on
+
+set expandtab
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 
 set ttyfast
 
@@ -62,7 +146,7 @@ set ttymouse=xterm2
 set ttyscroll=3
 
 " enable mouse
-set mouse=a 
+" set mouse=a 
 " Set default encoding to utf-8
 set encoding=utf-8
 set autoread
@@ -70,23 +154,12 @@ set autoindent
 set smartindent
 " Makes backspace key more powerful.
 set backspace=indent,eol,start  
-" Shows the match while typing
-set incsearch                   
-" Highlight found searches
-set hlsearch                    
 " Show me what I'm typing
 set showcmd                  
-" Don't use swapfile
-set noswapfile               
-" Don't create annoying backup files
-set nobackup                 
-set nowritebackup
 " Split vertical windows right to the current windows
 set splitright               
 " Split horizontal windows below to the current windows
 set splitbelow               
-" Do not show matching brackets by flickering
-set noshowmatch              
 " We show the mode with airline or lightline
 set noshowmode               
 " Search case insensitive...
@@ -108,6 +181,119 @@ set maxmempattern=20000
 if has('persistent_undo')
   set undofile
   set undodir=~/.cache/vim
+endif
+
+if using_vim
+    " A bunch of things that are set by default in neovim, but not in vim
+
+    " no vi-compatible
+    set nocompatible
+
+    " allow plugins by file type (required for plugins!)
+    filetype plugin on
+    filetype indent on
+
+    " always show status bar
+    set ls=2
+
+    " incremental search
+    set incsearch
+    " highlighted search results
+    set hlsearch
+
+    " syntax highlight on
+    syntax on
+
+    " better backup, swap and undos storage for vim (nvim has nice ones by
+    " default)
+    set directory=~/.vim/dirs/tmp     " directory to place swap files in
+    set backup                        " make backup files
+    set backupdir=~/.vim/dirs/backups " where to put backup files
+    set undofile                      " persistent undos - undo after you re-open the file
+    set undodir=~/.vim/dirs/undos
+    set viminfo+=n~/.vim/dirs/viminfo
+    " create needed directories if they don't exist
+    if !isdirectory(&backupdir)
+        call mkdir(&backupdir, "p")
+    endif
+    if !isdirectory(&directory)
+        call mkdir(&directory, "p")
+    endif
+    if !isdirectory(&undodir)
+        call mkdir(&undodir, "p")
+    endif
+end
+
+set fillchars+=vert:\ 
+
+if transparent_background
+    highlight Normal guibg=none
+    highlight Normal ctermbg=none
+    highlight NonText ctermbg=none
+endif
+
+" needed so deoplete can auto select the first suggestion
+set completeopt+=noinsert
+" comment this line to enable autocompletion preview window
+" (displays documentation related to the selected completion option)
+" disabled by default because preview makes the window flicker
+set completeopt-=preview
+
+" autocompletion of files and commands behaves like shell
+" (complete only the common part, list the options that match)
+set wildmode=list:longest
+
+" save as sudo
+ca w!! w !sudo tee "%"
+
+" when scrolling, keep cursor 3 lines away from screen border
+set scrolloff=3
+
+" fix problems with uncommon shells (fish, xonsh) and plugins running commands
+" (neomake, ...)
+set shell=/bin/bash
+
+" Deoplete -----------------------------
+
+" Use deoplete.
+let g:deoplete#enable_at_startup = 1
+call deoplete#custom#option({
+\   'ignore_case': v:true,
+\   'smart_case': v:true,
+\})
+" complete with words from any opened file
+let g:context_filetype#same_filetypes = {}
+let g:context_filetype#same_filetypes._ = '_'
+
+" Jedi-vim ------------------------------
+
+" Disable autocompletion (using deoplete instead)
+let g:jedi#completions_enabled = 0
+
+" All these mappings work only for python code:
+" Go to definition
+let g:jedi#goto_command = ',d'
+" Find ocurrences
+let g:jedi#usages_command = ',o'
+" Find assignments
+let g:jedi#goto_assignments_command = ',a'
+" Go to definition in new tab
+nmap ,D :tab split<CR>:call jedi#goto()<CR>
+
+
+" Yankring -------------------------------
+
+if using_neovim
+    if has('nvim-0.8')
+        let g:yankring_history_dir = stdpath('state')
+    else
+        let g:yankring_history_dir = data_dir
+    endif
+    " Fix for yankring and neovim problem when system has non-text things
+    " copied in clipboard
+    let g:yankring_clipboard_monitor = 0
+else
+    let g:yankring_history_dir = '~/.vim/dirs/'
 endif
 
 
@@ -140,16 +326,18 @@ augroup END
 "=====================================================
 "===================== STATUSLINE ====================
 
-let g:tmuxline_preset = {
-      \'a'    : '#S',
-      \'win'  : '#I #W',
-      \'cwin' : '#I #W',
-      \'x'    : '%a',
-      \'y'    : '%Y-%m-%d %H:%M',
-      \'z'    : ' #h',
-      \'options' : {'status-justify' : 'left', 'status-position' : 'top'}}
+if fancy_symbols_enabled
+    let g:tmuxline_preset = {
+          \'a'    : '#S',
+          \'win'  : '#I #W',
+          \'cwin' : '#I #W',
+          \'x'    : '%a',
+          \'y'    : '%Y-%m-%d %H:%M',
+          \'z'    : ' #h',
+          \'options' : {'status-justify' : 'left', 'status-position' : 'top'}}
 
-let g:tmuxline_powerline_separators = 0
+    let g:tmuxline_powerline_separators = 0
+endif
 
 "=====================================================
 "==================== THEME ==========================
@@ -176,6 +364,12 @@ set showtabline=2
 " captured by the terminal emulator for the same purpose
 nmap tn <Esc>:tabnext<CR>
 nmap tp <Esc>:tabprevious<CR>
+" tab navigation mappings
+map tt :tabnew 
+map <M-Right> :tabn<CR>
+imap <M-Right> <ESC>:tabn<CR>
+map <M-Left> :tabp<CR>
+imap <M-Left> <ESC>:tabp<CR>
 
 "=====================================================
 "==================== GOVIM ==========================
@@ -185,19 +379,19 @@ set signcolumn=number
 "=====================================================
 "==================== AUTOCOMPLETE ===================
 
-function! Omni()
-    call asyncomplete#register_source(asyncomplete#sources#omni#get_source_options({
-                    \ 'name': 'omni',
-                    \ 'whitelist': ['go', 'python'],
-                    \ 'completor': function('asyncomplete#sources#omni#completor')
-                    \  }))
-endfunction
-
-au VimEnter * :call Omni()
-
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-inoremap <expr> <cr>    pumvisible() ? "\<C-y>" : "\<cr>"
+" function! Omni()
+"     call asyncomplete#register_source(asyncomplete#sources#omni#get_source_options({
+"                     \ 'name': 'omni',
+"                     \ 'whitelist': ['go', 'python'],
+"                     \ 'completor': function('asyncomplete#sources#omni#completor')
+"                     \  }))
+" endfunction
+" 
+" au VimEnter * :call Omni()
+" 
+" inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+" inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+" inoremap <expr> <cr>    pumvisible() ? "\<C-y>" : "\<cr>"
 
 
 "=====================================================

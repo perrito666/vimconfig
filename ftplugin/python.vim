@@ -39,6 +39,7 @@ augroup END
 autocmd BufWritePre *.py :%s/\s\+$//e
 
 
+
 " ================= NeoMake ===================
 " Run linter on write
 autocmd! BufWritePost * Neomake
@@ -51,3 +52,7 @@ let g:neomake_python_flake8_maker.exe = 'python3 -m flake8'
 
 " Disable error messages inside the buffer, next to the problematic line
 let g:neomake_virtualtext_current_error = 0
+
+" Ability to add python breakpoints
+" (I use ipdb, but you can change it to whatever tool you use for debugging)
+au FileType python map <silent> <leader>b Oimport ipdb; ipdb.set_trace()<esc>
