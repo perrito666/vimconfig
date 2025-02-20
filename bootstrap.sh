@@ -97,11 +97,27 @@ for file in "$ftplugin_dir"/*; do
     fi
 done
 
+if [ ! -d "$HOME/.config" ]; then
+  mkdir -p $HOME/.config
+fi
+
+if [ ! -d "$HOME/.config/nvim" ]; then
+  ln -s $HOME/vimconfig/nvim $HOME/.config/nvim
+fi
+
+
+
 # I need nerdfonts, Hack is not a strong preference only a convenient choice
+# TODO: Also bring jetbrains mono
+NF_VER=3.3.0
 if [ ! -d "$HOME/vimconfig/fonts" ]; then
-  wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Hack.tar.xz
+  wget https://github.com/ryanoasis/nerd-fonts/releases/download/v${NF_VER}/Hack.tar.xz
+  wget https://github.com/ryanoasis/nerd-fonts/releases/download/v${NF_VER}/JetBrainsMono.tar.xz
+
   mkdir $HOME/vimconfig/fonts
   tar -xJf Hack.tar.xz -C $HOME/vimconfig/fonts
+  tar -xJf JetBrainsMono.tar.xz -C $HOME/vimconfig/fonts
+  rm Hack.tar.xz JetBrainsMono.tar.xz
 fi
 
 echo "Setup completed successfully!"

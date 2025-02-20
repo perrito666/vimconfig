@@ -4,27 +4,27 @@
 " Initial Settings
 " -------------------
 "
-" To use fancy symbols wherever possible, change this setting from 0 to 1
-" and use a font from https://github.com/ryanoasis/nerd-fonts in your terminal
-" (if you aren't using one of those fonts, you will see funny characters here.
-" Trust me, they look nice when using one of those fonts).
-let fancy_symbols_enabled = 0
-
 " To use the background color of your terminal app, change this setting from 0
 " to 1
 let transparent_background = 0
 
 let using_neovim = has('nvim')
-let using_vim = !using_neovim
 
 let config_dir = has('nvim') ? stdpath('config') : expand('~/.vim')
 let data_dir = has('nvim') ? stdpath('data') .. '/site' : expand('~/.vim')
 
 " Figure out the system Python for Neovim.
+" This is a deviation from the original version in fisa's vim
+" config. 
+" We just get the nearest python3 and ill install dependencies in every venv.
+" for now. it is worth noting that in most modern installs of python, it is
+" not allowed to install packages outside of the distro/OS package manager and
+" some of these are not packaged for all OS so we use A virtualenv, whichever
+" is at hand.
 if exists("$VIRTUAL_ENV")
-    let g:python3_host_prog=substitute(system("which -a python3 | head -n2 | tail -n1"), "\n", '', 'g')
+    let g:python3_host_prog=substitute(system("which -a python3 | head -n1 | tail -n1"), "\n", '', 'g')
 else
-    let g:python3_host_prog=substitute(system("which python3"), "\n", '', 'g')
+    let g:python3_host_prog = '~/.vim/venv/bin/python'
 endif
 
 " -----------------------
@@ -61,30 +61,42 @@ call plug#begin()
 
 
 " Make sure you use single quotes
-" let Vundle manage Vundle, required
-Plug 'VundleVim/Vundle.vim'
-" Plug 'govim/govim'
 Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}
-Plug 'edkolev/tmuxline.vim'
-Plug 'vim-airline/vim-airline'
-Plug 'gruvbox-community/gruvbox'
+" navigation tree
 Plug 'scrooloose/nerdtree'
+" Fuzzy find
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
-" autocomplete as recommended by govim
-" Plug 'prabirshrestha/asyncomplete.vim'
-" Plug 'yami-beta/asyncomplete-omni.vim'
-" lsp required for python lsp
-Plug 'prabirshrestha/vim-lsp'
+
+" lsp required for python, go, lua lsp
+Plug 'rcarriga/nvim-notify'
+Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-lua/plenary.nvim'
+" telescope is a nice popup dialog for various things
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.8' }
+Plug 'nvim-telescope/telescope-live-grep-args.nvim'
+" Lualine is a modern airline/tmuxline/etc
+Plug 'nvim-lualine/lualine.nvim'
+" If you want to have icons in your statusline choose one of these
+Plug 'nvim-tree/nvim-web-devicons' " OPTIONAL: for file icons
+" better tabs (notice nvim-web-devicons is a requirement of this and the
+" previous plug)
+Plug 'lewis6991/gitsigns.nvim' " OPTIONAL: for git status
+Plug 'romgrk/barbar.nvim' 
+" sessions
+Plug 'rmagatti/auto-session'
+
 " python deps from fisadev's vimrc
 " Python autocompletion
-if using_neovim && vim_plug_just_installed
+if vim_plug_just_installed
     Plug 'Shougo/deoplete.nvim', {'do': ':autocmd VimEnter * UpdateRemotePlugins'}
 else
     Plug 'Shougo/deoplete.nvim'
 endif
+" dependencies of deoplete
 Plug 'roxma/nvim-yarp'
 Plug 'roxma/vim-hug-neovim-rpc'
+" use jedi with deoplete
 Plug 'deoplete-plugins/deoplete-jedi'
 " Completion from other opened files
 Plug 'Shougo/context_filetype.vim'
@@ -105,17 +117,12 @@ Plug 'vim-scripts/YankRing.vim'
 Plug 'neomake/neomake'
 " Nice icons in the file explorer and file type status line.
 Plug 'ryanoasis/vim-devicons'
+" tags because python
+Plug 'majutsushi/tagbar'
 
 
-
-
-
-if using_vim
-    " Consoles as buffers (neovim has its own consoles as buffers)
-    Plug 'rosenfeld/conque-term'
-    " XML/HTML tags navigation (neovim has its own)
-    Plug 'vim-scripts/matchit.zip'
-endif
+" some themes
+Plug 'ribru17/bamboo.nvim'
 
 
 " Initialize plugin system
@@ -139,15 +146,11 @@ set expandtab
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
+set number
 
 set ttyfast
 
-set ttymouse=xterm2
-set ttyscroll=3
-
-" enable mouse
-" set mouse=a 
-" Set default encoding to utf-8
+" Set default encoding to utf-8 as one should
 set encoding=utf-8
 set autoread
 set autoindent
@@ -183,47 +186,6 @@ if has('persistent_undo')
   set undodir=~/.cache/vim
 endif
 
-if using_vim
-    " A bunch of things that are set by default in neovim, but not in vim
-
-    " no vi-compatible
-    set nocompatible
-
-    " allow plugins by file type (required for plugins!)
-    filetype plugin on
-    filetype indent on
-
-    " always show status bar
-    set ls=2
-
-    " incremental search
-    set incsearch
-    " highlighted search results
-    set hlsearch
-
-    " syntax highlight on
-    syntax on
-
-    " better backup, swap and undos storage for vim (nvim has nice ones by
-    " default)
-    set directory=~/.vim/dirs/tmp     " directory to place swap files in
-    set backup                        " make backup files
-    set backupdir=~/.vim/dirs/backups " where to put backup files
-    set undofile                      " persistent undos - undo after you re-open the file
-    set undodir=~/.vim/dirs/undos
-    set viminfo+=n~/.vim/dirs/viminfo
-    " create needed directories if they don't exist
-    if !isdirectory(&backupdir)
-        call mkdir(&backupdir, "p")
-    endif
-    if !isdirectory(&directory)
-        call mkdir(&directory, "p")
-    endif
-    if !isdirectory(&undodir)
-        call mkdir(&undodir, "p")
-    endif
-end
-
 set fillchars+=vert:\ 
 
 if transparent_background
@@ -253,19 +215,24 @@ set scrolloff=3
 " (neomake, ...)
 set shell=/bin/bash
 
-" Deoplete -----------------------------
-
+" -----------------------------
+" Deoplete 
+" -----------------------------
 " Use deoplete.
 let g:deoplete#enable_at_startup = 1
 call deoplete#custom#option({
 \   'ignore_case': v:true,
 \   'smart_case': v:true,
 \})
+" turn off deoplete on Telescope, it is incredibly annoying
+autocmd FileType TelescopePrompt call deoplete#custom#buffer_option('auto_complete', v:false)
 " complete with words from any opened file
 let g:context_filetype#same_filetypes = {}
 let g:context_filetype#same_filetypes._ = '_'
 
-" Jedi-vim ------------------------------
+" -----------------------------
+" Jedi-vim 
+" -----------------------------
 
 " Disable autocompletion (using deoplete instead)
 let g:jedi#completions_enabled = 0
@@ -281,22 +248,20 @@ let g:jedi#goto_assignments_command = ',a'
 nmap ,D :tab split<CR>:call jedi#goto()<CR>
 
 
-" Yankring -------------------------------
+" -----------------------------
+" Yankring 
+" -----------------------------
 
-if using_neovim
-    if has('nvim-0.8')
-        let g:yankring_history_dir = stdpath('state')
-    else
-        let g:yankring_history_dir = data_dir
-    endif
-    " Fix for yankring and neovim problem when system has non-text things
-    " copied in clipboard
-    let g:yankring_clipboard_monitor = 0
+if has('nvim-0.8')
+    let g:yankring_history_dir = stdpath('state')
 else
-    let g:yankring_history_dir = '~/.vim/dirs/'
+    let g:yankring_history_dir = data_dir
 endif
+" Fix for yankring and neovim problem when system has non-text things
+" copied in clipboard
+let g:yankring_clipboard_monitor = 0
 
-
+" Some sensible default for known types
 augroup filetypedetect
   command! -nargs=* -complete=help Help vertical belowright help <args>
   autocmd FileType help wincmd L
@@ -321,42 +286,23 @@ augroup filetypedetect
   autocmd FileType yaml setlocal expandtab shiftwidth=2 tabstop=2
   autocmd FileType json setlocal expandtab shiftwidth=2 tabstop=2
   autocmd FileType ruby setlocal expandtab shiftwidth=2 tabstop=2
+
+  autocmd FileType json set formatprg=jq
 augroup END
 
-"=====================================================
-"===================== STATUSLINE ====================
 
-if fancy_symbols_enabled
-    let g:tmuxline_preset = {
-          \'a'    : '#S',
-          \'win'  : '#I #W',
-          \'cwin' : '#I #W',
-          \'x'    : '%a',
-          \'y'    : '%Y-%m-%d %H:%M',
-          \'z'    : ' #h',
-          \'options' : {'status-justify' : 'left', 'status-position' : 'top'}}
-
-    let g:tmuxline_powerline_separators = 0
-endif
-
-"=====================================================
-"==================== THEME ==========================
-
-" Assume background is dark, this is true for 99% of my terminals
-" Otherwise color scheme is really hard to see
-set background=dark
-" Change the color scheme to one that i like (this is as personal as it gets)
-colorscheme gruvbox
-" Show line numbers, I have no clue why this is not a default
-set number
+" -----------------------------
+" Remember edit position
+" -----------------------------
 " Remember position of last edit and return on reopen
 " Let me be honest, i do not entirely understand what this incantation does
 if has("autocmd")
   au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 endif
 
-"=====================================================
-"==================== TABS ===========================
+" -----------------------------
+"  Tabs
+" -----------------------------
 
 " always show the tabline, I love consistency and hate my screen real state :p
 set showtabline=2
@@ -364,39 +310,17 @@ set showtabline=2
 " captured by the terminal emulator for the same purpose
 nmap tn <Esc>:tabnext<CR>
 nmap tp <Esc>:tabprevious<CR>
-" tab navigation mappings
+" tab navigation mappings, not working mostly bc M is captured
 map tt :tabnew 
 map <M-Right> :tabn<CR>
 imap <M-Right> <ESC>:tabn<CR>
 map <M-Left> :tabp<CR>
 imap <M-Left> <ESC>:tabp<CR>
 
-"=====================================================
-"==================== GOVIM ==========================
 
-set signcolumn=number
-
-"=====================================================
-"==================== AUTOCOMPLETE ===================
-
-" function! Omni()
-"     call asyncomplete#register_source(asyncomplete#sources#omni#get_source_options({
-"                     \ 'name': 'omni',
-"                     \ 'whitelist': ['go', 'python'],
-"                     \ 'completor': function('asyncomplete#sources#omni#completor')
-"                     \  }))
-" endfunction
-" 
-" au VimEnter * :call Omni()
-" 
-" inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-" inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-" inoremap <expr> <cr>    pumvisible() ? "\<C-y>" : "\<cr>"
-
-
-"=====================================================
-"==================== NERDTree =======================
-
+" -----------------------------
+" NERDTree
+" -----------------------------
 
 " toggle nerdtree display
 map <F3> :NERDTreeToggle<CR>
@@ -411,3 +335,38 @@ let g:DevIconsEnableFoldersOpenClose = 1
 
 " Fix directory colors
 highlight! link NERDTreeFlags NERDTreeDir
+
+" -----------------------------
+" Tag
+" -----------------------------
+map <F4> :TagbarToggle<CR>
+let g:tagbar_autofocus = 1
+let g:tagbar_foldlevel = 1
+
+" "run ctags on current folder
+command! MakeTags !ctags -R --exclude=.venv --exclude=.mypy* --exclude=.pip* --exclude=*.pyc --exclude=*.orig .
+command! LibTags !find `".venv/bin/python" -c "import distutils; print(distutils.sysconfig.get_python_lib())"` -name \*.py | ctags -L- --append
+
+
+" -----------------------------
+" Grep
+" -----------------------------
+" "Use ack as grep program
+" "I should be using a config file for all folder to avoid
+set grepprg=ack\ --ignore-dir=.venv\ --ignore-dir=.mypy_cache\ --ignore-dir=.mypy-venv-public-api\ --ignore-dir=.mypy-venv\ --ignore-dir=.mypy-venv-devtools\ --ignore-file=is:tags\ --ignore-file=ext:orig\ --ignore-file=ext:pyc\ --nocolor\ --nogroup\ --column
+" "Format of ack result so it is correctly displyes on quickfix window
+set grepformat=%f:%l:%c:%m
+
+augroup myvimrc
+	autocmd!
+	autocmd QuickFixCmdPost [^l]* cwindow 20
+	autocmd QuickFixCmdPost l*    lwindow 20
+augroup END
+
+" "search word under curson with ack, redraw code window
+map <leader>ffg :execute "silent grep! " . expand("<cword>") . " . " <CR><C-W><Up><C-L><C-W><Down>
+
+
+" buffers selection screen
+map <leader>b :Buffers<CR>
+
