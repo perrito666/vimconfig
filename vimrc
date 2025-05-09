@@ -109,6 +109,8 @@ Plug 'fisadev/vim-isort'
 " General from fisadev's vimrc
 " Git integration
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-rhubarb' " fugitive plugin to gbrowse to github
+Plug 'ruifm/gitlinker.nvim' " allows copying links to github, also depends on plenary
 " Git/mercurial/others diff icons on the side of the file lines
 Plug 'mhinz/vim-signify'
 " Yank history navigation

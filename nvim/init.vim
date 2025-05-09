@@ -21,5 +21,6 @@ source ~/.config/nvim/lualine.lua
 source ~/.config/nvim/barbar.lua
 " auto session
 source ~/.config/nvim/autosession.lua
-
+" git links
+source ~/.config/nvim/gitlinker.lua
 
