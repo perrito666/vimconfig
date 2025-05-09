@@ -74,3 +74,5 @@
 [user]
 	email = horacio.duran@gmail.com
 	name = Horacio Duran
+[push]
+	default = current
