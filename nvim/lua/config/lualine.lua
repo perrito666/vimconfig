@@ -2,13 +2,9 @@ require('lualine').setup {
   options = {
     icons_enabled = true,
     theme = 'bamboo',
-    -- component_separators = { left = '', right = ''},
     component_separators = { left = '', right = ''},
     section_separators = { left = "", right = "" },
-    disabled_filetypes = {
-      statusline = {},
-      winbar = {},
-    },
+    disabled_filetypes = { statusline = {}, winbar = {} },
     ignore_focus = {},
     always_divide_middle = true,
     always_show_tabline = true,
@@ -25,17 +21,17 @@ require('lualine').setup {
     lualine_c = {'filename', function() return vim.fn['tagbar#currenttag']("%s", '', 'f', 'nearest-stl') end},
     lualine_x = {'encoding', 'fileformat', 'filetype'},
     lualine_y = {
-                    { "progress", separator = " ", padding = { left = 1, right = 0 } },
-                    { "location", padding = { left = 0, right = 1 } },
-                },
+        { "progress", separator = " ", padding = { left = 1, right = 0 } },
+        { "location", padding = { left = 0, right = 1 } },
+    },
     lualine_z = {
-                    {
-                        function()
-                            return " " .. os.date("%R")
-                        end,
-                        separator = { right = "" },
-                    },
-                }
+        {
+            function()
+                return " " .. os.date("%R")
+            end,
+            separator = { right = "" },
+        },
+    }
   },
   inactive_sections = {
     lualine_a = {},
@@ -50,4 +46,3 @@ require('lualine').setup {
   inactive_winbar = {},
   extensions = {}
 }
-

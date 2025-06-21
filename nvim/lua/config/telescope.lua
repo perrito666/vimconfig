@@ -32,7 +32,6 @@ local defaults = {
         },
     },
 
-    -- BUG: This causes too many issues.
     preview = { treesitter = false },
 }
 
@@ -40,25 +39,22 @@ telescope.setup({
     defaults = defaults,
     extensions = {
         live_grep_args = {
-          auto_quoting = true, -- enable/disable auto-quoting
-          -- define mappings, e.g.
-          mappings = { -- extend mappings
+          auto_quoting = true,
+          mappings = {
             i = {
               ["<C-k>"] = lga_actions.quote_prompt(),
               ["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
-              -- freeze the current list and start a fuzzy search in the frozen list
               ["<C-j>"] = lga_actions.to_fuzzy_refine,
             },
           },
-           }
+        }
     },
     pickers = {
         diagnostics = { sort_by = "severity", preview_title = "" },
-        live_grep = { preview_title = "", mappings = { -- extend mappings
+        live_grep = { preview_title = "", mappings = {
                 i = {
                   ["<C-k>"] = lga_actions.quote_prompt(),
                   ["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
-                  -- freeze the current list and start a fuzzy search in the frozen list
                   ["<C-j>"] = lga_actions.to_fuzzy_refine,
                 },
             } 
@@ -82,12 +78,9 @@ vim.api.nvim_create_autocmd("User", {
     callback = function() vim.opt_local.number = true end,
 })
 
-
--- don't forget to load the extension
 telescope.load_extension("live_grep_args")
 local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find files' })
---vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope live grep' })
 vim.keymap.set("n", "<leader>fg", require('telescope').extensions.live_grep_args.live_grep_args)
 vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help tags' })
