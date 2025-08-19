@@ -1,0 +1,37 @@
+[[language]]
+name = "go"
+roots = ["go.work", "go.mod"]
+auto-format = true
+formatter = ["gofumpt"]
+comment-token = "//"
+language-servers = [ "gopls", "golangci-lint-lsp" ]
+
+[language-server.golangci-lint-lsp]
+command = "golangci-lint-langserver"
+
+[language-server.golangci-lint-lsp.config]
+command = ["golangci-lint", "run", "--output.json.path", "stdout", "--show-stats=false", "--issues-exit-code=1"]
+
+[[language]]
+name = "python"
+language-servers = ["pylsp"]
+formatter = ["ruff"]
+auto-format = true
+
+[language-server.pylsp]
+command = "/Users/hduran/.hxvenv/bin/pylsp"
+
+[language-server.jedi]
+command = "/Users/hduran/.hxvenv/bin/jedi"
+
+[language-server.ty]
+command = "/Users/hduran/.hxvenv/bin/ty"
+
+[language-server.pylsp.config.pylsp]
+plugins.pylsp_mypy.enabled = true
+plugins.pylsp_mypy.live_mode = true
+
+[[language]]
+name = "make"
+formatter = ["/Users/hduran/.hxvenv/bin/mbake"]
+auto-format = true

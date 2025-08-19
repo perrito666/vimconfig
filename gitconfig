@@ -76,3 +76,5 @@
 	name = Horacio Duran
 [push]
 	default = current
+[core]
+	editor = hx -vvv

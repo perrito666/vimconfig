@@ -74,7 +74,6 @@ if [ ! -L "$HOME/.gitconfig" ] || [ "$(readlink "$HOME/.gitconfig")" != "$HOME/v
     ln -s "$HOME/vimconfig/gitconfig" "$HOME/.gitconfig"
 fi
 
-
 # now link the ftplugins if they do not exist
 vimconfig_dir="$HOME/vimconfig"
 ftplugin_dir="$vimconfig_dir/ftplugin"
@@ -105,7 +104,13 @@ if [ ! -d "$HOME/.config/nvim" ]; then
   ln -s $HOME/vimconfig/nvim $HOME/.config/nvim
 fi
 
-
+# Symlink helix_config to $HOME/.config/helix
+if [ ! -L "$HOME/.config/helix" ]; then
+  if [ -e "$HOME/.config/helix" ]; then
+    mv "$HOME/.config/helix" "$HOME/.config/helix.bak"
+  fi
+  ln -s $HOME/vimconfig/helix_config $HOME/.config/helix
+fi
 
 # I need nerdfonts, Hack is not a strong preference only a convenient choice
 # TODO: Also bring jetbrains mono
@@ -120,5 +125,30 @@ if [ ! -d "$HOME/vimconfig/fonts" ]; then
   rm Hack.tar.xz JetBrainsMono.tar.xz
 fi
 
+# Ensure $HOME/.hxvenv virtualenv exists with uv and hxrequirements.txt installed
+HX_VENV="$HOME/.hxvenv"
+HX_REQ="$HOME/vimconfig/hxrequirements.txt"
+
+if ! command -v uv >/dev/null 2>&1; then
+    echo "uv is not installed. Please install the 'uv' tool (https://github.com/astral-sh/uv) and re-run this script."
+    exit 1
+fi
+
+if [ ! -d "$HX_VENV" ]; then
+    uv venv "$HX_VENV"
+fi
+
+# shellcheck source=/dev/null
+. "$HX_VENV/bin/activate"
+
+if [ -f "$HX_REQ" ]; then
+    uv pip install -r "$HX_REQ"
+fi
+
+deactivate
+
 echo "Setup completed successfully!"
+echo
+echo "REMINDER: Add the following line to your ~/.bashrc (or equivalent) to set the virtualenv for helix:"
+echo "    export VENVPATH=\"\$HOME/.hxvenv\""
 
