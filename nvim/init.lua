@@ -1,144 +1,201 @@
 -- Entry point for new Neovim config using lazy.nvim
 -- Structure: lua/plugins/, lua/config/
 
--- Entry point for new Neovim config using lazy.nvim
--- Structure: lua/plugins/, lua/config/
+-- ensure .vimrc does not interfere
+vim.cmd("set runtimepath-=~/.vim")
+vim.cmd("set runtimepath-=~/.vim/after")
+vim.cmd("set runtimepath+=~/.config/nvim")
 
--- 1. Ensure lazy.nvim is installed
+-- Ensure lazy.nvim is installed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		"--branch=stable",
-		lazypath,
-	})
+    vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable",
+        lazypath,
+    })
 end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-	-- UI and Theme
-	{
-		"ribru17/bamboo.nvim",
-		lazy = false,
-		priority = 1000,
-		config = function()
-			require("bamboo").load()
-		end
-	},
-	{
-		"nvim-lualine/lualine.nvim",
-		dependencies = { "nvim-tree/nvim-web-devicons" },
-		config = function()
-			require("config.lualine")
-		end
-	},
-	{
-		"romgrk/barbar.nvim",
-		dependencies = { "nvim-tree/nvim-web-devicons" },
-		config = function()
-			require("config.barbar")
-		end
-	},
+    -- UI and Theme
+    {
+        "ribru17/bamboo.nvim",
+        lazy = false,
+        priority = 1000,
+        config = function()
+            require("bamboo").load()
+        end
+    },
+    {
+        "nvim-lualine/lualine.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+        config = function()
+            require("config.lualine")
+        end
+    },
+    {
+        "romgrk/barbar.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+        config = function()
+            require("config.barbar")
+        end
+    },
 
-	-- LSP, Formatting, and Linting
-	{ "neovim/nvim-lspconfig",             config = function() require("config.lsp") end },
-	{ "williamboman/mason.nvim",           config = true },
-	{ "williamboman/mason-lspconfig.nvim", config = true },
-	{
-		"stevearc/conform.nvim",
-		opts = {},
-	},
-	{
-		"mfussenegger/nvim-lint",
-		event = { "BufReadPre", "BufNewFile" },
-	},
-	{ "rcarriga/nvim-notify",    config = function() require("config.notify") end },
+    -- File Explorer (nvim-tree)
+    {
+        "nvim-tree/nvim-tree.lua",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+        config = function()
+            require("nvim-tree").setup({
+                view = {
+                    width = 30,
+                    side = "left",
+                },
+                renderer = {
+                    icons = {
+                        show = {
+                            folder = true,
+                            file = true,
+                            folder_arrow = true,
+                        },
+                    },
+                },
+                update_focused_file = {
+                    enable = true,
+                    update_cwd = true,
+                },
+                git = {
+                    enable = true,
+                },
+            })
+        end,
+    },
 
-	-- Autocompletion
-	{ "hrsh7th/nvim-cmp",        config = function() require("config.cmp") end },
-	{ "hrsh7th/cmp-nvim-lsp" },
-	{ "hrsh7th/cmp-path" },
-	{ "hrsh7th/cmp-buffer" },
-	{ "saadparwaiz1/cmp_luasnip" },
-	{ "L3MON4D3/LuaSnip" },
+    -- LSP, Formatting, and Linting
+    { "neovim/nvim-lspconfig",             config = function() require("config.lsp") end },
+    { "williamboman/mason.nvim",           config = true },
+    { "williamboman/mason-lspconfig.nvim", config = true },
+    {
+        "stevearc/conform.nvim",
+        opts = {},
+    },
+    {
+        "mfussenegger/nvim-lint",
+        event = { "BufReadPre", "BufNewFile" },
+    },
+    { "rcarriga/nvim-notify",    config = function() require("config.notify") end },
 
-	-- Treesitter
-	{
-		"nvim-treesitter/nvim-treesitter",
-		build = ":TSUpdate",
-		config = function()
-			require("config.treesitter")
-		end
-	},
+    -- Autocompletion
+    { "hrsh7th/nvim-cmp",        config = function() require("config.cmp") end },
+    { "hrsh7th/cmp-nvim-lsp" },
+    { "hrsh7th/cmp-path" },
+    { "hrsh7th/cmp-buffer" },
+    { "saadparwaiz1/cmp_luasnip" },
+    { "L3MON4D3/LuaSnip" },
 
-	-- Telescope
-	{
-		"nvim-telescope/telescope.nvim",
-		branch = "0.1.x",
-		dependencies = { "nvim-lua/plenary.nvim" },
-		config = function()
-			require("config.telescope")
-		end
-	},
-	{ "nvim-telescope/telescope-live-grep-args.nvim" },
-	{ "nvim-telescope/telescope-fzf-native.nvim",    build = "make" },
+    -- Treesitter
+    {
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate",
+        config = function()
+            require("config.treesitter")
+        end
+    },
 
-	-- Session Management
-	{ "rmagatti/auto-session",                       config = function() require("config.autosession") end },
+    -- Telescope
+    {
+        "nvim-telescope/telescope.nvim",
+        branch = "0.1.x",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        config = function()
+            require("config.telescope")
+        end
+    },
+    { "nvim-telescope/telescope-live-grep-args.nvim" },
+    { "nvim-telescope/telescope-fzf-native.nvim",    build = "make" },
 
-	-- Misc
-	{ "folke/neoconf.nvim",                          lazy = true },
-	{
-		"ruifm/gitlinker.nvim",
-		dependencies = "nvim-lua/plenary.nvim",
-		config = function()
-			require("config.gitlinker")
-		end,
-		keys = {
-			{
-				"<leader>gy",
-				function()
-					require("gitlinker").get_buf_range_url("n", {
-						action_callback = require("gitlinker.actions").copy_to_clipboard,
-					})
-				end,
-				desc = "GitLink: yank URL to clipboard",
-			},
-			{
-				"<leader>go",
-				function()
-					require("gitlinker").get_buf_range_url("n", {
-						action_callback = require("gitlinker.actions").open_in_browser,
-					})
-				end,
-				desc = "GitLink: open in browser",
-			},
-			{
-				"<leader>gy",
-				function()
-					require("gitlinker").get_buf_range_url("v", {
-						action_callback = require("gitlinker.actions").copy_to_clipboard,
-					})
-				end,
-				mode = "v",
-				desc = "GitLink: yank URL (visual)",
-			},
-			{
-				"<leader>go",
-				function()
-					require("gitlinker").get_buf_range_url("v", {
-						action_callback = require("gitlinker.actions").open_in_browser,
-					})
-				end,
-				mode = "v",
-				desc = "GitLink: open URL (visual)",
-			},
-		},
-	},
+    -- Session Management
+    { "rmagatti/auto-session",                       config = function() require("config.autosession") end },
+    -- version control
+    {
+        "lewis6991/gitsigns.nvim",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        config = function()
+            require("config.gitsigns") -- Load the configuration from gitsigns.lua
+        end,
+    },
+    -- Misc
+    { "folke/neoconf.nvim", lazy = true },
+    {
+        "ruifm/gitlinker.nvim",
+        dependencies = "nvim-lua/plenary.nvim",
+        config = function()
+            require("config.gitlinker")
+        end,
+        keys = {
+            {
+                "<leader>gy",
+                function()
+                    require("gitlinker").get_buf_range_url("n", {
+                        action_callback = require("gitlinker.actions").copy_to_clipboard,
+                    })
+                end,
+                desc = "GitLink: yank URL to clipboard",
+            },
+            {
+                "<leader>go",
+                function()
+                    require("gitlinker").get_buf_range_url("n", {
+                        action_callback = require("gitlinker.actions").open_in_browser,
+                    })
+                end,
+                desc = "GitLink: open in browser",
+            },
+            {
+                "<leader>gy",
+                function()
+                    require("gitlinker").get_buf_range_url("v", {
+                        action_callback = require("gitlinker.actions").copy_to_clipboard,
+                    })
+                end,
+                mode = "v",
+                desc = "GitLink: yank URL (visual)",
+            },
+            {
+                "<leader>go",
+                function()
+                    require("gitlinker").get_buf_range_url("v", {
+                        action_callback = require("gitlinker.actions").open_in_browser,
+                    })
+                end,
+                mode = "v",
+                desc = "GitLink: open URL (visual)",
+            },
+        },
+    },
 
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+        opts = {
+            -- your configuration comes here
+            -- or leave it empty to use the default settings
+            -- refer to the configuration section below
+        },
+        keys = {
+            {
+                "<leader>?",
+                function()
+                    require("which-key").show({ global = false })
+                end,
+                desc = "Buffer Local Keymaps (which-key)",
+            },
+        },
+    },
 })
 
 -- Global options
@@ -147,18 +204,163 @@ vim.o.number = true
 vim.o.relativenumber = true
 vim.o.mouse = "a"
 vim.o.clipboard = "unnamedplus"
+vim.opt.expandtab = true
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.encoding = "utf-8"
+vim.opt.autoread = true
+vim.opt.autoindent = true
+vim.opt.smartindent = true
+vim.opt.backspace = { "indent", "eol", "start" }
+vim.opt.showcmd = true
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.completeopt = { "menu", "menuone", "noinsert" }
+vim.opt.wildmode = { "list", "longest" }
+vim.opt.scrolloff = 3
+vim.opt.shell = "/bin/bash"
+vim.opt.lazyredraw = true
+vim.opt.fillchars:append("vert:|")
+vim.opt.signcolumn = "yes:3"
+
+-- Persistent undo
+if vim.fn.has("persistent_undo") == 1 then
+    vim.opt.undofile = true
+    vim.opt.undodir = vim.fn.stdpath("cache") .. "/undo"
+end
+
+-- Transparent background
+local transparent_background = false
+if transparent_background then
+    vim.cmd("highlight Normal guibg=none")
+    vim.cmd("highlight NonText guibg=none")
+end
 
 -- Load Neovide customizations if needed
 if vim.g.neovide then
-	require("config.neovide")
+    require("config.neovide")
 end
 
 vim.keymap.set("n", "<leader>un", function()
-	require("notify").dismiss({ silent = true, pending = true })
+    require("notify").dismiss({ silent = true, pending = true })
 end, { desc = "Dismiss all notifications" })
 
 -- Custom Commands
 -- Conform: Format
 vim.api.nvim_create_user_command("Format", function()
-	require("conform").format({ async = true, lsp_format = "fallback" })
+    require("conform").format({ async = true, lsp_format = "fallback" })
 end, { desc = "use conform to format the current file" })
+
+-- Key mappings
+vim.keymap.set("n", "tn", ":tabnext<CR>")
+vim.keymap.set("n", "tp", ":tabprevious<CR>")
+
+-- Key mappings for nvim-tree
+vim.keymap.set("n", "<F3>", ":NvimTreeToggle<CR>")
+vim.keymap.set("n", ",t", ":NvimTreeFindFile<CR>")
+vim.keymap.set("n", "<F4>", ":TagbarToggle<CR>")
+vim.keymap.set("n", "<leader>b", ":Buffers<CR>")
+vim.keymap.set("n", "<leader>ffg", function()
+    vim.cmd("silent grep! " .. vim.fn.expand("<cword>") .. " .")
+    vim.cmd("cwindow 20")
+end)
+
+
+-- Tagbar settings
+vim.g.tagbar_autofocus = 1
+vim.g.tagbar_foldlevel = 1
+vim.api.nvim_create_user_command("MakeTags",
+    "!ctags -R --exclude=.venv --exclude=.mypy* --exclude=.pip* --exclude=*.pyc --exclude=*.orig .", {})
+vim.api.nvim_create_user_command("LibTags",
+    "!find `~/.vim/venv/bin/python -c 'import distutils; print(distutils.sysconfig.get_python_lib())'` -name \\*.py | ctags -L- --append",
+    {})
+
+-- Autocommands
+vim.api.nvim_create_autocmd("BufReadPost", {
+    callback = function()
+        if vim.fn.line("'\"") > 1 and vim.fn.line("'\"") <= vim.fn.line("$") then
+            vim.cmd("normal! g'\"")
+        end
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "TelescopePrompt",
+    callback = function()
+        vim.g["deoplete#enable_at_startup"] = 0
+    end,
+})
+
+vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+    pattern = { "*.tmux.conf", "tmux.conf*" },
+    command = "setf tmux",
+})
+
+vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+    pattern = { "*.nginx.conf", "nginx.conf*" },
+    command = "setf nginx",
+})
+
+vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+    pattern = "*.gotmpl",
+    command = "set filetype=gotexttmpl",
+})
+
+-- Python virtual environment management
+local function setup_python_venv()
+    local venv_path = os.getenv("VIRTUAL_ENV") -- Check if a virtualenv is already active
+    local file_dir = vim.fn.expand("%:p:h")    -- Get the directory of the current file
+    local project_venv = nil
+
+    -- Search for a venv or .venv folder in the current file's directory or its parents
+    while file_dir ~= "/" do
+        if vim.fn.isdirectory(file_dir .. "/venv") == 1 then
+            project_venv = file_dir .. "/venv"
+            break
+        elseif vim.fn.isdirectory(file_dir .. "/.venv") == 1 then
+            project_venv = file_dir .. "/.venv"
+            break
+        end
+        file_dir = vim.fn.fnamemodify(file_dir, ":h") -- Move up one directory
+    end
+
+    -- If no project venv is found, create a fallback venv in ~/.nvim_venv
+    if not project_venv then
+        project_venv = vim.fn.expand("~/.nvim_venv")
+        if vim.fn.isdirectory(project_venv) == 0 then
+            vim.fn.system({ "python3", "-m", "venv", project_venv })
+        end
+    end
+
+    -- Activate the virtual environment
+    vim.g.python3_host_prog = project_venv .. "/bin/python"
+    vim.env.VIRTUAL_ENV = project_venv
+    vim.env.PATH = project_venv .. "/bin:" .. vim.env.PATH
+
+    -- Check if the environment is a `uv` environment
+    local is_uv_env = vim.fn.executable("uv") == 1
+    if is_uv_env then
+        -- Use `uv pip` to install dependencies
+        vim.fn.system({ "uv", "pip", "install", "--upgrade", "pip", "setuptools", "wheel" })
+        vim.fn.system({ "uv", "pip", "install", "python-lsp-server", "pylint", "flake8", "isort" })
+    else
+        -- Use the standard `pip` for non-uv environments
+        vim.fn.system({ project_venv .. "/bin/pip", "install", "--upgrade", "pip", "setuptools", "wheel" })
+        vim.fn.system({ project_venv .. "/bin/pip", "install", "python-lsp-server", "pylint", "flake8", "isort" })
+    end
+end
+
+-- Autocommand to set up Python virtual environment when editing Python files
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "python",
+    callback = setup_python_venv,
+})
+
+-- Load configuration for diagnostics
+require("config.diagnostics")
+
