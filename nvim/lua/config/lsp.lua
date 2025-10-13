@@ -1,5 +1,4 @@
 -- lua/config/lsp.lua
-local lspconfig = require("lspconfig")
 
 -- ===== Capabilities (autocompletion) =====
 local ok_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
@@ -54,13 +53,12 @@ end
 -- ===== Servers =====
 
 -- Python (pyright)
-lspconfig.pyright.setup({
+vim.lsp.config("pyright", {
   capabilities = capabilities,
-  on_attach = server_on_attach,
 })
 
 -- Go (gopls)
-lspconfig.gopls.setup({
+vim.lsp.config("gopls", {
   capabilities = capabilities,
   on_attach = server_on_attach,
   settings = {
@@ -73,13 +71,13 @@ lspconfig.gopls.setup({
 })
 
 -- Rust (rust_analyzer)
-lspconfig.rust_analyzer.setup({
+vim.lsp.config("rust_analyzer", {
   capabilities = capabilities,
   on_attach = server_on_attach,
 })
 
 -- Lua (nvim config, I have not the slightest idea about lua)
-lspconfig.lua_ls.setup({
+vim.lsp.config("lua_ls", {
   capabilities = capabilities,
   on_attach = server_on_attach,
   settings = {

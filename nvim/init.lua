@@ -10,36 +10,36 @@ vim.cmd("set runtimepath+=~/.config/nvim")
 do
   local is_macos = (vim.loop.os_uname().sysname == "Darwin")
     or (vim.fn.has("mac") == 1)
-  if not is_macos then
-    return
-  end
+  if is_macos then
+    local function exists(p)
+      return p and p ~= "" and vim.loop.fs_stat(p) ~= nil
+    end
+    local function not_in_path(p)
+      local PATH = vim.env.PATH or ""
+      return not PATH:find("(^|:)" .. vim.pesc(p) .. "(:|$)")
+    end
+    local to_prepend = {}
 
-  local function exists(p)
-    return p and p ~= "" and vim.loop.fs_stat(p) ~= nil
-  end
-  local function not_in_path(p)
-    local PATH = vim.env.PATH or ""
-    return not PATH:find("(^|:)" .. vim.pesc(p) .. "(:|$)")
-  end
-  local to_prepend = {}
+    -- Apple Silicon Homebrew
+    if exists("/opt/homebrew/bin") and not_in_path("/opt/homebrew/bin") then
+      table.insert(to_prepend, "/opt/homebrew/bin")
+    end
+    -- Intel Homebrew (in case I find an older Mac)
+    if exists("/usr/local/bin") and not_in_path("/usr/local/bin") then
+      table.insert(to_prepend, "/usr/local/bin")
+    end
+    -- Mason bin (LSP servers installed by por mason)
+    local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
+    if exists(mason_bin) and not_in_path(mason_bin) then
+      table.insert(to_prepend, mason_bin)
+    end
 
-  -- Apple Silicon Homebrew
-  if exists("/opt/homebrew/bin") and not_in_path("/opt/homebrew/bin") then
-    table.insert(to_prepend, "/opt/homebrew/bin")
-  end
-  -- Intel Homebrew (in case I find an older Mac)
-  if exists("/usr/local/bin") and not_in_path("/usr/local/bin") then
-    table.insert(to_prepend, "/usr/local/bin")
-  end
-  -- Mason bin (LSP servers installed by por mason)
-  local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
-  if exists(mason_bin) and not_in_path(mason_bin) then
-    table.insert(to_prepend, mason_bin)
-  end
-
-  if #to_prepend > 0 then
-    vim.env.PATH = table.concat(to_prepend, ":") .. ":" .. (vim.env.PATH or "")
-    vim.fn.setenv("PATH", vim.env.PATH) -- set for child processes
+    if to_prepend > 0 then
+      vim.env.PATH = table.concat(to_prepend, ":")
+        .. ":"
+        .. (vim.env.PATH or "")
+      vim.fn.setenv("PATH", vim.env.PATH) -- set for child processes
+    end
   end
 end
 
