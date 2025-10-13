@@ -77,4 +77,4 @@
 [push]
 	default = current
 [core]
-	editor = hx -vvv
+	editor = nvim

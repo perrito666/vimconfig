@@ -3,9 +3,5 @@ indent_type = "Spaces"
 indent_width = 2
 quote_style = "AutoPreferDouble"
 call_parentheses = "Always"
-
-collapse_simple_statement = false
-align_arguments = false
-align_parameter = false
-indent_expression = "Auto"
+collapse_simple_statement = "Never"
 
