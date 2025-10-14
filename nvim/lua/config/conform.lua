@@ -1,7 +1,7 @@
 require("conform").setup({
   formatters_by_ft = {
     lua = { "stylua" },
-    python = { "black" },
+    -- python = { "black" }, -- this is handled by ruff
     javascript = { "prettier" },
     typescript = { "prettier" },
     html = { "prettier" },

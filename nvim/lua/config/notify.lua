@@ -15,17 +15,24 @@ local ignored_messages = {
 }
 
 vim.notify = function(msg, level, opts)
-  if vim.tbl_contains(ignored_messages, msg) then return end
+  if vim.tbl_contains(ignored_messages, msg) then
+    return
+  end
   local lvls = vim.log.levels
-  local keep = function() return true end
+  local keep = function()
+    return true
+  end
   local defaults = {
     [lvls.TRACE] = { timeout = 500 },
     [lvls.DEBUG] = { timeout = 500 },
-    [lvls.INFO]  = { timeout = 1000 },
-    [lvls.WARN]  = { timeout = 10000 },
+    [lvls.INFO] = { timeout = 1000 },
+    [lvls.WARN] = { timeout = 10000 },
     [lvls.ERROR] = { timeout = 10000, keep = keep },
   }
   opts = vim.tbl_extend("force", defaults[level or lvls.INFO] or {}, opts or {})
   return notify(msg, level, opts)
 end
 
+vim.keymap.set("n", "<leader>nd", function()
+  require("notify").dismiss({ silent = true, pending = true })
+end, { desc = "Dismiss all notifications" })

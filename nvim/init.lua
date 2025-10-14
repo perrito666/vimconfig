@@ -112,6 +112,18 @@ require("lazy").setup({
     end,
   },
 
+  -- fzf
+  {
+    "ibhagwan/fzf-lua",
+    -- optional for icon support
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    -- or if using mini.icons/mini.nvim
+    -- dependencies = { "nvim-mini/mini.icons" },
+    config = function()
+      require("config.fzf")
+    end,
+  },
+
   -- LSP, Formatting, and Linting
 
   {
@@ -185,17 +197,17 @@ require("lazy").setup({
     end,
   },
 
-  -- Telescope
+  -- Git
   {
-    "nvim-telescope/telescope.nvim",
-    branch = "0.1.x",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      require("config.telescope")
-    end,
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim", -- required
+      "sindrets/diffview.nvim", -- optional - Diff integration
+
+      -- Only one of these is needed.
+      "ibhagwan/fzf-lua", -- optional
+    },
   },
-  { "nvim-telescope/telescope-live-grep-args.nvim" },
-  { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 
   -- Session Management
   {
@@ -365,13 +377,6 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     if vim.fn.line("'\"") > 1 and vim.fn.line("'\"") <= vim.fn.line("$") then
       vim.cmd("normal! g'\"")
     end
-  end,
-})
-
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "TelescopePrompt",
-  callback = function()
-    vim.g["deoplete#enable_at_startup"] = 0
   end,
 })
 
