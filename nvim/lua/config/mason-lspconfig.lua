@@ -3,6 +3,7 @@ require("mason-lspconfig").setup({
     "lua_ls",
     "ts_ls",
     "ruff",
+    "basedpyright",
     "bashls",
     "jsonls",
     "yamlls",

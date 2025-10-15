@@ -13,6 +13,17 @@ vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
     -- args.buf = bufnr, args.data.client_id
     local buf = args.buf
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    -- vim.print(client.name, client.server_capabilities)
+
+    if not (client == nil) then
+      if client.name == "ruff" then
+        -- disable hover in favor of pyright
+        client.server_capabilities.hoverProvider = false
+      end
+      client.server_capabilities.documentFormattingProvider = false
+      client.server_capabilities.documentRangeFormattingProvider = false
+    end
 
     local function bufmap(mode, lhs, rhs, desc)
       vim.keymap.set(
@@ -22,6 +33,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
         { buffer = buf, noremap = true, silent = true, desc = desc }
       )
     end
+
+    bufmap("n", "K", function()
+      vim.lsp.buf.hover({ border = "rounded", max_height = 25 })
+    end)
+    bufmap("n", "<C-k>", vim.lsp.buf.signature_help)
 
     bufmap("n", "gd", function()
       vim.lsp.buf.definition()
@@ -38,17 +54,30 @@ vim.api.nvim_create_autocmd("LspAttach", {
   end,
 })
 
--- ===== Helper: disable lsp formatting, (Conform rules here) =====
-local function disable_formatting(client)
-  client.server_capabilities.documentFormattingProvider = false
-  client.server_capabilities.documentRangeFormattingProvider = false
+local function detect_venv()
+  local project_venv = os.getenv("VIRTUAL_ENV") -- Check if a virtualenv is already active
+  if project_venv then
+    local file_dir = vim.fn.expand("%:p:h") -- Get the directory of the current file
+    while file_dir ~= "/" do
+      if vim.fn.isdirectory(file_dir .. "/venv") == 1 then
+        project_venv = file_dir .. "/venv"
+        break
+      elseif vim.fn.isdirectory(file_dir .. "/.venv") == 1 then
+        project_venv = file_dir .. "/.venv"
+        break
+      end
+      file_dir = vim.fn.fnamemodify(file_dir, ":h") -- Move up one directory
+    end
+  end
+  if not project_venv then
+    return
+  end
+  vim.g.python3_host_prog = project_venv .. "/bin/python"
+  vim.env.VIRTUAL_ENV = project_venv
+  vim.env.PATH = project_venv .. "/bin:" .. vim.env.PATH
 end
 
--- Wrapper on_attach only for server tweaks
-local function server_on_attach(client, bufnr) -- luacheck: ignore 212
-  -- Disable formatting where Conform is used (black, gofumpt, rustfmt, stylua)
-  disable_formatting(client)
-end
+detect_venv()
 
 -- ===== Servers =====
 
@@ -56,6 +85,56 @@ end
 vim.lsp.config("ruff", {
   capabilities = capabilities,
 })
+vim.lsp.enable("ruff")
+
+local new_capability = {
+  -- this will remove some of the diagnostics that duplicates those from ruff, idea taken and adapted from
+  -- here: https://github.com/astral-sh/ruff-lsp/issues/384#issuecomment-1989619482
+  -- and in turn i took it from https://github.com/jdhao/nvim-config/blob/a8a1b929212c9d2a015a14215dd58d94bc7bdfe8/lua/config/lsp.lua#L32
+  textDocument = {
+    publishDiagnostics = {
+      tagSupport = {
+        valueSet = { 2 },
+      },
+    },
+    hover = {
+      contentFormat = { "plaintext" },
+      dynamicRegistration = true,
+    },
+  },
+}
+local merged_capability =
+  vim.tbl_deep_extend("force", capabilities, new_capability)
+vim.lsp.config("basedpyright", {
+  capabilities = merged_capability,
+  settings = {
+    pyright = {
+      -- disable import sorting and use Ruff for this
+      disableOrganizeImports = true,
+      disableTaggedHints = false,
+    },
+    python = {
+      analysis = {
+        autoSearchPaths = true,
+        diagnosticMode = "workspace",
+        typeCheckingMode = "standard",
+        useLibraryCodeForTypes = true,
+        -- we can this setting below to redefine some diagnostics
+        diagnosticSeverityOverrides = {
+          deprecateTypingAliases = false,
+        },
+        -- inlay hint settings are provided by pylance?
+        inlayHints = {
+          callArgumentNames = "partial",
+          functionReturnTypes = true,
+          pytestParameters = true,
+          variableTypes = true,
+        },
+      },
+    },
+  },
+})
+vim.lsp.enable("basedpyright")
 
 -- Prefer Ruff on save for formatting python, just in case
 vim.api.nvim_create_autocmd("BufWritePre", {
@@ -76,7 +155,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 -- Go (gopls)
 vim.lsp.config("gopls", {
   capabilities = capabilities,
-  on_attach = server_on_attach,
   settings = {
     gopls = {
       analyses = { unusedparams = true },
@@ -89,7 +167,6 @@ vim.lsp.config("gopls", {
 -- Rust (rust_analyzer)
 vim.lsp.config("rust_analyzer", {
   capabilities = capabilities,
-  on_attach = server_on_attach,
 })
 
 -- Lua (nvim config, I have not the slightest idea about lua)

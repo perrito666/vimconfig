@@ -34,7 +34,7 @@ do
       table.insert(to_prepend, mason_bin)
     end
 
-    if to_prepend > 0 then
+    if #to_prepend > 0 then
       vim.env.PATH = table.concat(to_prepend, ":")
         .. ":"
         .. (vim.env.PATH or "")
@@ -470,10 +470,10 @@ local function setup_python_venv()
 end
 
 -- Autocommand to set up Python virtual environment when editing Python files
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "python",
-  callback = setup_python_venv,
-})
+--vim.api.nvim_create_autocmd("FileType", {
+--  pattern = "python",
+--  callback = setup_python_venv,
+--})
 
 -- Load configuration for diagnostics
 require("config.diagnostics")
