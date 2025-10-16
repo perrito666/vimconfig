@@ -21,6 +21,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         -- disable hover in favor of pyright
         client.server_capabilities.hoverProvider = false
       end
+      -- Disable formatting except for python, we use conform
       client.server_capabilities.documentFormattingProvider = false
       client.server_capabilities.documentRangeFormattingProvider = false
     end
@@ -135,22 +136,6 @@ vim.lsp.config("basedpyright", {
   },
 })
 vim.lsp.enable("basedpyright")
-
--- Prefer Ruff on save for formatting python, just in case
-vim.api.nvim_create_autocmd("BufWritePre", {
-  group = vim.api.nvim_create_augroup("RuffFormatOnSave", { clear = true }),
-  pattern = "*.py",
-  callback = function(args)
-    vim.lsp.buf.format({
-      bufnr = args.buf,
-      async = false,
-      timeout_ms = 1000,
-      filter = function(client)
-        return client.name == "ruff"
-      end,
-    })
-  end,
-})
 
 -- Go (gopls)
 vim.lsp.config("gopls", {

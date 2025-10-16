@@ -1,7 +1,7 @@
 require("conform").setup({
   formatters_by_ft = {
     lua = { "stylua" },
-    python = { "ruff" }, -- this is handled by ruff
+    python = { "ruff", "ruff_organize_imports" }, -- this is handled by ruff on the LSP
     javascript = { "prettier" },
     typescript = { "prettier" },
     html = { "prettier" },
@@ -22,8 +22,8 @@ require("conform").setup({
 
   format_on_save = function(bufnr)
     local ft = vim.bo[bufnr].filetype
-    if ft == "markdown" then
-      return false
+    if ft == "python" then
+      return { lsp_format = "never", timeout_ms = 2000 }
     end
     if ft == "sh" or ft == "bash" or ft == "zsh" then
       return { timeout_ms = 1000, lsp_format = "never" }
