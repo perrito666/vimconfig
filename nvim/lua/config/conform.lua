@@ -1,7 +1,7 @@
 require("conform").setup({
   formatters_by_ft = {
     lua = { "stylua" },
-    python = { "ruff", "ruff_organize_imports" }, -- this is handled by ruff on the LSP
+    python = { "ruff_format", "ruff_organize_imports", "ruff_fix" }, -- this is handled by ruff on the LSP
     javascript = { "prettier" },
     typescript = { "prettier" },
     html = { "prettier" },

@@ -174,6 +174,43 @@ require("lazy").setup({
       require("config.lint")
     end,
   },
+  {
+    "folke/trouble.nvim",
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = "Trouble",
+    keys = {
+      {
+        "<leader>xx",
+        "<cmd>Trouble diagnostics toggle<cr>",
+        desc = "Diagnostics (Trouble)",
+      },
+      {
+        "<leader>xX",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "<leader>cs",
+        "<cmd>Trouble symbols toggle focus=false<cr>",
+        desc = "Symbols (Trouble)",
+      },
+      {
+        "<leader>cl",
+        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+        desc = "LSP Definitions / references / ... (Trouble)",
+      },
+      {
+        "<leader>xL",
+        "<cmd>Trouble loclist toggle<cr>",
+        desc = "Location List (Trouble)",
+      },
+      {
+        "<leader>xQ",
+        "<cmd>Trouble qflist toggle<cr>",
+        desc = "Quickfix List (Trouble)",
+      },
+    },
+  },
 
   -- Autocompletion
   {
@@ -211,9 +248,10 @@ require("lazy").setup({
 
   -- Session Management
   {
-    "rmagatti/auto-session",
+    "folke/persistence.nvim",
+    event = "BufReadPre", -- this will only start session saving when an actual file was opened
     config = function()
-      require("config.autosession")
+      require("config.persistence")
     end,
   },
   -- version control
@@ -357,6 +395,32 @@ vim.keymap.set("n", "<leader>ffg", function()
   vim.cmd("cwindow 20")
 end)
 
+-- Key mappings for persistence
+--load the session for the current directory
+vim.keymap.set("n", "<leader>qs", function()
+  require("persistence").load()
+end)
+
+-- select a session to load
+vim.keymap.set("n", "<leader>qS", function()
+  require("persistence").select()
+end)
+
+-- load the last session
+vim.keymap.set("n", "<leader>ql", function()
+  require("persistence").load({ last = true })
+end)
+
+-- stop Persistence => session won't be saved on exit
+vim.keymap.set("n", "<leader>qd", function()
+  require("persistence").stop()
+end)
+
+-- persist now => save whatever we are on now as the session
+vim.keymap.set("n", "<leader>sS", function()
+  persist.save()
+end, { desc = "Session: save now" })
+
 -- Tagbar settings
 vim.g.tagbar_autofocus = 1
 vim.g.tagbar_foldlevel = 1
@@ -394,86 +458,6 @@ vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
   pattern = "*.gotmpl",
   command = "set filetype=gotexttmpl",
 })
-
--- Python virtual environment management
-local function setup_python_venv()
-  local venv_path = os.getenv("VIRTUAL_ENV") -- Check if a virtualenv is already active
-  local file_dir = vim.fn.expand("%:p:h") -- Get the directory of the current file
-  local project_venv = nil
-
-  -- Search for a venv or .venv folder in the current file's directory or its parents
-  while file_dir ~= "/" do
-    if vim.fn.isdirectory(file_dir .. "/venv") == 1 then
-      project_venv = file_dir .. "/venv"
-      break
-    elseif vim.fn.isdirectory(file_dir .. "/.venv") == 1 then
-      project_venv = file_dir .. "/.venv"
-      break
-    end
-    file_dir = vim.fn.fnamemodify(file_dir, ":h") -- Move up one directory
-  end
-
-  -- If no project venv is found, create a fallback venv in ~/.nvim_venv
-  if not project_venv then
-    project_venv = vim.fn.expand("~/.nvim_venv")
-    if vim.fn.isdirectory(project_venv) == 0 then
-      vim.fn.system({ "python3", "-m", "venv", project_venv })
-    end
-  end
-
-  -- Activate the virtual environment
-  vim.g.python3_host_prog = project_venv .. "/bin/python"
-  vim.env.VIRTUAL_ENV = project_venv
-  vim.env.PATH = project_venv .. "/bin:" .. vim.env.PATH
-
-  -- Check if the environment is a `uv` environment
-  local is_uv_env = vim.fn.executable("uv") == 1
-  if is_uv_env then
-    -- Use `uv pip` to install dependencies
-    vim.fn.system({
-      "uv",
-      "pip",
-      "install",
-      "--upgrade",
-      "pip",
-      "setuptools",
-      "wheel",
-    })
-    vim.fn.system({
-      "uv",
-      "pip",
-      "install",
-      "python-lsp-server",
-      "pylint",
-      "flake8",
-      "isort",
-    })
-  else
-    -- Use the standard `pip` for non-uv environments
-    vim.fn.system({
-      project_venv .. "/bin/pip",
-      "install",
-      "--upgrade",
-      "pip",
-      "setuptools",
-      "wheel",
-    })
-    vim.fn.system({
-      project_venv .. "/bin/pip",
-      "install",
-      "python-lsp-server",
-      "pylint",
-      "flake8",
-      "isort",
-    })
-  end
-end
-
--- Autocommand to set up Python virtual environment when editing Python files
---vim.api.nvim_create_autocmd("FileType", {
---  pattern = "python",
---  callback = setup_python_venv,
---})
 
 -- Load configuration for diagnostics
 require("config.diagnostics")

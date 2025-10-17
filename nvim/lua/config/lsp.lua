@@ -114,11 +114,12 @@ vim.lsp.config("basedpyright", {
       disableOrganizeImports = true,
       disableTaggedHints = false,
     },
-    python = {
+    basedpyright = {
       analysis = {
         autoSearchPaths = true,
-        diagnosticMode = "workspace",
-        typeCheckingMode = "standard",
+        diagnosticMode = "openFilesOnly",
+        ignore = { "*" },
+        typeCheckingMode = "off", --"standard",
         useLibraryCodeForTypes = true,
         -- we can this setting below to redefine some diagnostics
         diagnosticSeverityOverrides = {
