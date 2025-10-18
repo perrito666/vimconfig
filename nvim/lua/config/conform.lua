@@ -32,6 +32,7 @@ require("conform").setup({
   end,
 })
 
-vim.keymap.set({ "n", "v" }, "<leader>f", function()
-  require("conform").format({ async = true, lsp_format = "never" })
-end, { desc = "Format buffer (Conform)" })
+-- Conform: Format
+vim.api.nvim_create_user_command("Format", function()
+  require("conform").format({ async = true, lsp_format = "fallback" })
+end, { desc = "use conform to format the current file" })
