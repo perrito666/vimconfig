@@ -5,12 +5,6 @@ vim.keymap.set("n", "tp", ":tabprevious<CR>")
 -- Key mappings for nvim-tree
 vim.keymap.set("n", "<F3>", ":NvimTreeToggle<CR>")
 vim.keymap.set("n", ",t", ":NvimTreeFindFile<CR>")
-vim.keymap.set("n", "<F4>", ":TagbarToggle<CR>")
-vim.keymap.set("n", "<leader>b", ":Buffers<CR>")
-vim.keymap.set("n", "<leader>ffg", function()
-  vim.cmd("silent grep! " .. vim.fn.expand("<cword>") .. " .")
-  vim.cmd("cwindow 20")
-end)
 
 -- Key mappings for persistence
 --load the session for the current directory

@@ -42,28 +42,7 @@ require("lazy").setup({
     "nvim-tree/nvim-tree.lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-      require("nvim-tree").setup({
-        view = {
-          width = 30,
-          side = "left",
-        },
-        renderer = {
-          icons = {
-            show = {
-              folder = true,
-              file = true,
-              folder_arrow = true,
-            },
-          },
-        },
-        update_focused_file = {
-          enable = true,
-          update_cwd = true,
-        },
-        git = {
-          enable = true,
-        },
-      })
+      require("config.nvimtree")
     end,
   },
 
