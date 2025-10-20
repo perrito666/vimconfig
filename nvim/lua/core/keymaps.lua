@@ -104,6 +104,18 @@ vim.keymap.set("n", "<leader>xL", "<cmd>Trouble loclist toggle<cr>", {
 vim.keymap.set("n", "<leader>xQ", "<cmd>Trouble qflist toggle<cr>", {
   desc = "Quickfix List (Trouble)",
 })
+-- LSP Quickfix
+vim.keymap.set("n", "<leader>ci", function()
+  -- Prefer quickfix actions (where gopls puts “Add import …”)
+  local ok = pcall(vim.lsp.buf.code_action, {
+    apply = true, -- Neovim ≥ 0.10 applies if only one action
+    context = { only = { "quickfix" } },
+  })
+  if not ok then
+    -- Fallback for older Neovim: just open the code action menu
+    vim.lsp.buf.code_action({ context = { only = { "quickfix" } } })
+  end
+end, { desc = "LSP: import/fix at cursor (Go)" })
 -- Notify
 vim.keymap.set("n", "<leader>un", function()
   require("notify").dismiss({ silent = true, pending = true })
