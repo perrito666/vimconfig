@@ -6,6 +6,13 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 if ok_cmp then
   capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
 end
+-- https://www.reddit.com/r/neovim/comments/179vv49/nvim_golang_lsp_not_detecting_newly_installed/
+capabilities.workspace = {
+  didChangeWatchedFiles = {
+    dynamicRegistration = true,
+  },
+  workspaceFolders = true,
+}
 
 -- ===== Keymaps via LspAttach (reeplaces on_attach for mappings) =====
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -35,10 +42,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
       )
     end
 
-    bufmap("n", "K", function()
-      vim.lsp.buf.hover({ border = "rounded", max_height = 25 })
-    end)
-    bufmap("n", "<C-k>", vim.lsp.buf.signature_help)
+    bufmap("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
 
     bufmap("n", "gd", function()
       vim.lsp.buf.definition()
