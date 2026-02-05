@@ -78,3 +78,9 @@
 	default = current
 [core]
 	editor = nvim
+	sshCommand = ssh -F ~/.ssh/config
+	autocrlf = input
+[url "ssh://git@github.com/"]
+	insteadof = https://github.com/
+[github]
+	user = perrito666

@@ -29,6 +29,8 @@ vim.opt.shell = "/bin/bash"
 vim.opt.lazyredraw = true
 vim.opt.fillchars:append("vert:|")
 vim.opt.signcolumn = "yes:3"
+-- Add rounded borders to all floating windows
+vim.o.winborder = "rounded"
 
 -- Persistent undo
 if vim.fn.has("persistent_undo") == 1 then
