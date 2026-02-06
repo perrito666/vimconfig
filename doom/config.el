@@ -228,6 +228,7 @@
 ;; =============================================================================
 ;; Disable warnings for work tags file.
 ;; =============================================================================
+
 (setq large-file-warning-threshold 200000000)  ;; 200MB threshold
 
 ;; =============================================================================
@@ -242,6 +243,7 @@
 ;; =============================================================================
 ;; emacs-pr-review configuration
 ;; =============================================================================
+
 (setq auth-sources '("~/.authinfo"))
 (evil-ex-define-cmd "prr" #'pr-review)
 (evil-ex-define-cmd "prs" #'pr-review-search)
@@ -321,7 +323,17 @@
       :n "v" #'+pr-review/open-in-vsplit)
 
 ;; =============================================================================
-;; channge leader key to what I use in vim
+;; change leader key to what I use in vim
 ;; =============================================================================
+
 (setq doom-leader-key "\\"
       doom-localleader-key "\\")
+
+;; =============================================================================
+;; Configure fonts
+;; =============================================================================
+
+(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 16 :weight 'light)
+      doom-variable-pitch-font (font-spec :family "PT Sans" :size 13)
+      doom-symbol-font (font-spec :family "Hack Nerd Font Mono")
+      doom-big-font (font-spec :family "JetBrainsMono Nerd Font" :size 24))
