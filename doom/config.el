@@ -134,8 +134,7 @@
              #'+python/auto-activate-project-venv)
 
   (add-hook! '(python-mode-local-vars-hook python-ts-mode-local-vars-hook)
-    (defun +python/refresh-modeline ()
-      (force-mode-line-update)))
+    (force-mode-line-update))
 
   )
 
@@ -182,9 +181,8 @@
   (setq-default flycheck-disabled-checkers
                 '(python-flake8 python-pycompile python-pylint python-mypy)))
 
-(add-hook! 'python-ts-mode-hook
-  (defun +python/disable-flycheck ()
-    (flycheck-mode -1)))
+(add-hook! '(python-ts-mode-hook python-mode-hook)
+  (flycheck-mode -1))
 
 ;; =============================================================================
 ;; LSP UI & Documentation Display
