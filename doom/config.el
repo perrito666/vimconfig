@@ -203,7 +203,9 @@
         lsp-signature-render-documentation nil
         ;; Enable eldoc integration
         lsp-eldoc-enable-hover nil
-        lsp-eldoc-render-all nil))
+        lsp-eldoc-render-all nil
+        lsp-disabled-clients '(semgrep-ls)
+        ))
 
 ;; Eldoc settings
 (setq eldoc-echo-area-use-multiline-p t
@@ -238,6 +240,88 @@
       (cmd! (find-file "~/org/doom-cheatsheet.org")))
 
 ;; =============================================================================
-;; magit auth for github
+;; emacs-pr-review configuration
 ;; =============================================================================
 (setq auth-sources '("~/.authinfo"))
+(evil-ex-define-cmd "prr" #'pr-review)
+(evil-ex-define-cmd "prs" #'pr-review-search)
+(evil-ex-define-cmd "prn" #'pr-review-notification)
+(add-to-list 'browse-url-default-handlers
+             '(pr-review-url-parse . pr-review-open-url));;
+
+
+;; =============================================================================
+;; PR Review Custom Functions
+;; =============================================================================
+
+(defun +pr-review/current-repo-open-prs ()
+  "Search for open PRs in the current buffer's repository."
+  (interactive)
+  (if-let* ((default-directory (or (locate-dominating-file default-directory ".git")
+                                   default-directory))
+            (remote (string-trim (shell-command-to-string "git remote get-url origin")))
+            (repo (cond
+                   ;; git@github.com:owner/repo.git
+                   ((string-match "git@github\\.com:\\(.+/.+\\)\\.git" remote)
+                    (match-string 1 remote))
+                   ;; git@github.com:owner/repo (no .git)
+                   ((string-match "git@github\\.com:\\(.+/.+\\)$" remote)
+                    (match-string 1 remote))
+                   ;; https://github.com/owner/repo.git
+                   ((string-match "github\\.com/\\(.+/.+\\)\\.git" remote)
+                    (match-string 1 remote))
+                   ;; https://github.com/owner/repo (no .git)
+                   ((string-match "github\\.com/\\(.+/.+\\)$" remote)
+                    (match-string 1 remote)))))
+      (pr-review-search (format "is:pr archived:false is:open repo:%s base:master" repo))
+    (user-error "Could not determine GitHub repository from current buffer")))
+
+(defun +pr-review/current-repo-my-reviews ()
+  "Search for PRs requesting my review in the current buffer's repository."
+  (interactive)
+  (if-let* ((default-directory (or (locate-dominating-file default-directory ".git")
+                                   default-directory))
+            (remote (string-trim (shell-command-to-string "git remote get-url origin")))
+            (repo (cond
+                   ((string-match "git@github\\.com:\\(.+/.+\\)\\.git" remote)
+                    (match-string 1 remote))
+                   ((string-match "git@github\\.com:\\(.+/.+\\)$" remote)
+                    (match-string 1 remote))
+                   ((string-match "github\\.com/\\(.+/.+\\)\\.git" remote)
+                    (match-string 1 remote))
+                   ((string-match "github\\.com/\\(.+/.+\\)$" remote)
+                    (match-string 1 remote)))))
+      (pr-review-search (format "is:pr archived:false user-review-requested:@me is:open repo:%s base:master" repo))
+    (user-error "Could not determine GitHub repository from current buffer")))
+
+(map! :leader
+      :prefix ("G" . "GitHub")
+      :desc "This Repo Open PRs" "p" #'+pr-review/current-repo-open-prs
+      :desc "This Repo My Reviews" "r" #'+pr-review/current-repo-my-reviews
+      :desc "PR Notifications" "n" #'pr-review-notification
+      :desc "Open PR by URL" "o" #'pr-review)
+
+(defun +pr-review/open-in-vsplit ()
+  "Open PR at point in a vertical split to the right."
+  (interactive)
+  (let ((current-window (selected-window)))
+    (select-window (split-window-right))
+    (pr-review-listview-open)))
+
+(defun +pr-review/open-in-hsplit ()
+  "Open PR at point in a horizontal split below."
+  (interactive)
+  (let ((current-window (selected-window)))
+    (select-window (split-window-below))
+    (pr-review-listview-open)))
+
+;; Add to pr-review-listview-mode (the search results buffer)
+(map! :map pr-review-listview-mode-map
+      :n "s" #'+pr-review/open-in-hsplit
+      :n "v" #'+pr-review/open-in-vsplit)
+
+;; =============================================================================
+;; channge leader key to what I use in vim
+;; =============================================================================
+(setq doom-leader-key "\\"
+      doom-localleader-key "\\")
