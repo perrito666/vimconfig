@@ -75,7 +75,7 @@
 	email = horacio.duran@gmail.com
 	name = Horacio Duran
 [push]
-	default = current
+	default = simple
 [core]
 	editor = nvim
 	sshCommand = ssh -F ~/.ssh/config

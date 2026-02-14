@@ -138,7 +138,7 @@
 
   )
 
-;; Add this to your config to update modeline after venv activation
+(setq-hook! 'python-mode-hook +format-with-lsp t)
 
 ;; =============================================================================
 ;; Pyright Configuration
@@ -335,3 +335,14 @@
       doom-variable-pitch-font (font-spec :family "PT Sans" :size 13)
       doom-symbol-font (font-spec :family "Hack Nerd Font Mono")
       doom-big-font (font-spec :family "JetBrainsMono Nerd Font" :size 24))
+
+
+
+;; =============================================================================
+;; winpulse-mode momentarily flashes the background of Emacs windows whenever
+;;  they gain focus, providing a visual cue for the active window.
+;; =============================================================================
+
+(use-package! winpulse
+  :config
+  (winpulse-mode 1))

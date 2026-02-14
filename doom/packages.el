@@ -53,3 +53,6 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
 (package! pr-review)
+
+;; Winpulse briefly hilights the chosen window upon switching.
+(package! winpulse :recipe (:host github :repo "xenodium/winpulse"))
