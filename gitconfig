@@ -71,6 +71,14 @@
 
   fresh = !git fetch --all && git reset --hard origin/master -
   # fetch from all remotes and reset to origin/master
+  nb = "!f() { \
+    branch=\"$1\"; \
+    base=\"${2:-origin/master}\"; \
+    git checkout -b \"$branch\" \"$base\" && \
+    git branch --unset-upstream && \
+    git push -u origin \"$branch\":\"$branch\" 2>/dev/null || \
+    git branch --set-upstream-to=\"origin/$branch\" \"$branch\"; \
+  }; f"
 [user]
 	email = horacio.duran@gmail.com
 	name = Horacio Duran
@@ -84,3 +92,4 @@
 	insteadof = https://github.com/
 [github]
 	user = perrito666
+

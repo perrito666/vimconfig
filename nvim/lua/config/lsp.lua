@@ -50,10 +50,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
     bufmap("n", "K", function()
       vim.lsp.buf.hover()
     end, "Hover")
-    bufmap("n", "gr", function()
-      vim.lsp.buf.references()
-    end, "References")
-    bufmap("n", "<leader>rn", function()
+bufmap("n", "<leader>rn", function()
       vim.lsp.buf.rename()
     end, "Rename")
   end,
